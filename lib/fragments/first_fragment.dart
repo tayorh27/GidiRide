@@ -179,15 +179,24 @@ class _MapFragment extends State<MapFragment> {
   }
 
   Future<void> getBookingFares() async {
-    DatabaseReference ref = FirebaseDatabase.instance
-        .reference()
-        .child('settings');
-    await ref.child('fees').child('booking_fee').child('car').once().then((val) {
+    DatabaseReference ref =
+        FirebaseDatabase.instance.reference().child('settings');
+    await ref
+        .child('fees')
+        .child('booking_fee')
+        .child('car')
+        .once()
+        .then((val) {
       setState(() {
         car_fares = Fares.fromSnapshot(val);
       });
     });
-    await ref.child('fees').child('booking_fee').child('bike').once().then((val) {
+    await ref
+        .child('fees')
+        .child('booking_fee')
+        .child('bike')
+        .once()
+        .then((val) {
       setState(() {
         bike_fare = Fares.fromSnapshot(val);
       });
@@ -556,6 +565,7 @@ class _MapFragment extends State<MapFragment> {
                               child: Center(
                                 child: new FlatButton(
                                   onPressed: () {
+                                    setModeForDestination('none');
                                     setState(() {
                                       isBottomSheet = false;
                                       destination_location = null;
@@ -646,7 +656,7 @@ class _MapFragment extends State<MapFragment> {
             }
           });
         },
-        onLongPress: (){
+        onLongPress: () {
           _infoPressed(id);
         },
       ),
@@ -654,9 +664,9 @@ class _MapFragment extends State<MapFragment> {
   }
 
   void _infoPressed(String type) {
-    if(type == 'car'){
+    if (type == 'car') {
       new Utils().displayFareInformation(context, 'Car Fares', car_fares);
-    }else {
+    } else {
       new Utils().displayFareInformation(context, 'Bike Fares', bike_fare);
     }
   }
@@ -828,21 +838,21 @@ class _MapFragment extends State<MapFragment> {
   }
 
   String getPrice(String id) {
-      double dist = double.parse(trip_distance.split(' ')[0]);
-      double dur = double.parse(trip_distance.split(' ')[0]);
-      if (id == 'car') {
-        double total = (dist * double.parse(car_fares.per_distance)) +
-            (dur * double.parse(car_fares.per_duration)) +
-            double.parse(car_fares.start_fare);
-        double total_range = total + 400;
-        return '₦${total.ceil()} - ₦${total_range.ceil()}';
-      } else {
-        double total = (dist * double.parse(bike_fare.per_distance)) +
-            (dur * double.parse(bike_fare.per_duration)) +
-            double.parse(bike_fare.start_fare);
-        double total_range = total + 200;
-        return '₦${total.ceil()} - ₦${total_range.ceil()}';
-      }
+    double dist = double.parse(trip_distance.split(' ')[0]);
+    double dur = double.parse(trip_distance.split(' ')[0]);
+    if (id == 'car') {
+      double total = (dist * double.parse(car_fares.per_distance)) +
+          (dur * double.parse(car_fares.per_duration)) +
+          double.parse(car_fares.start_fare);
+      double total_range = total + 400;
+      return '₦${total.ceil()} - ₦${total_range.ceil()}';
+    } else {
+      double total = (dist * double.parse(bike_fare.per_distance)) +
+          (dur * double.parse(bike_fare.per_duration)) +
+          double.parse(bike_fare.start_fare);
+      double total_range = total + 200;
+      return '₦${total.ceil()} - ₦${total_range.ceil()}';
+    }
   }
 
   _confirmBooking() async {
@@ -862,9 +872,9 @@ class _MapFragment extends State<MapFragment> {
         return;
       }
     }
-    if (ride_option_type_id == ''){
-      new Utils().neverSatisfied(
-          context, 'Error', 'Please select a ride option.');
+    if (ride_option_type_id == '') {
+      new Utils()
+          .neverSatisfied(context, 'Error', 'Please select a ride option.');
       return;
     }
     setState(() {
@@ -894,6 +904,7 @@ class _MapFragment extends State<MapFragment> {
       'status': 'incoming',
       'created_date': DateTime.now().toString(),
       'price_range': getPrice(ride_option_type_id),
+      'trip_total_price': '',
       'fare':
           (ride_option_selected_car) ? car_fares.toJSON() : bike_fare.toJSON(),
       'assigned_driver': 'none'
@@ -915,6 +926,7 @@ class _MapFragment extends State<MapFragment> {
         'status': 'incoming',
         'created_date': DateTime.now().toString(),
         'price_range': getPrice(ride_option_type_id),
+        'trip_total_price': '',
         'fare': (ride_option_selected_car)
             ? car_fares.toJSON()
             : bike_fare.toJSON(),
@@ -1046,11 +1058,11 @@ class _MapFragment extends State<MapFragment> {
     DatabaseReference statusRef = FirebaseDatabase.instance
         .reference()
         .child('users/${_email.replaceAll('.', ',')}/trips/status');
-    statusRef.once().then((snapshot) {
-      if (snapshot.value != null) {
-        String val = snapshot.value['current_ride_status'];
+    statusRef.onValue.listen((snapshot) {
+      if (snapshot.snapshot.value != null) {
+        String val = snapshot.snapshot.value['current_ride_status'];
         setState(() {
-          current_trip_id = snapshot.value['current_ride_id'];
+          current_trip_id = snapshot.snapshot.value['current_ride_id'];
           isAlreadyBooked = true;
           if (val == 'driver assigned') {
             dialogType = DialogType.arriving;
@@ -1135,7 +1147,7 @@ class _MapFragment extends State<MapFragment> {
         }
       });
     } catch (e) {
-      new Utils().neverSatisfied(context, 'error', '${e.toString()}');
+      print('${e.toString()}');
     }
   }
 
@@ -1165,7 +1177,7 @@ class _MapFragment extends State<MapFragment> {
       String current_trip_id, bool review_driver) async {
     DatabaseReference tripRef2 = FirebaseDatabase.instance
         .reference()
-        .child('users/${_email.replaceAll('.', ',')}/trips/$current_trip_id');
+        .child('users/${_email.replaceAll('.', ',')}/trips/incoming/$current_trip_id');
     await tripRef2.once().then((snapshot) {
       setState(() {
         currentTrip = CurrentTrip.fromSnapshot(snapshot);
@@ -1173,7 +1185,9 @@ class _MapFragment extends State<MapFragment> {
         destination_location = currentTrip.destination;
         if (review_driver) {
           Route route = MaterialPageRoute(
-              builder: (context) => ReviewDriver(currentTrip.assigned_driver));
+              builder: (context) => ReviewDriver(
+                  currentTrip.assigned_driver, currentTrip.trip_total_price,
+                  current_trip_id));
           Navigator.pushReplacement(context, route);
         }
         if (currentTrip.assigned_driver != 'none' &&
@@ -1207,7 +1221,7 @@ class _MapFragment extends State<MapFragment> {
         _currentLocation['longitude'].toString();
     String url =
         'https://maps.googleapis.com/maps/api/distancematrix/json?origins=$latlng&destinations=$current&key=$api_key';
-    print(url);
+    //print(url);
     http.get(url).then((res) async {
       Map<String, dynamic> resp = json.decode(res.body);
       String status = resp['status'];

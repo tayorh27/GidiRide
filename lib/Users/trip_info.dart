@@ -147,6 +147,13 @@ class _TripInfo extends State<TripInfo> {
                     fontSize: 16.0,
                     fontWeight: FontWeight.w500),
               ),
+              trailing: Text(
+                '${widget.snapshot.value['trip_total_price'].toString()}',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 30.0,
+                    fontWeight: FontWeight.w500),
+              ),
             ),
             new Container(
               color: Color(MyColors().button_text_color),
@@ -213,8 +220,8 @@ class _TripInfo extends State<TripInfo> {
         'drivers/${widget.snapshot.value['assigned_driver'].toString().replaceAll('.', ',')}/signup');
     await driverRef.once().then((snapshot) {
       setState(() {
-        driver_image = snapshot.value[''];
-        driver_name = snapshot.value[''];
+        driver_image = snapshot.value['image'];
+        driver_name = snapshot.value['fullname'];
       });
     });
   }

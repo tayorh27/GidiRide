@@ -1,6 +1,10 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:gidi_ride/Models/driver.dart';
+import 'package:gidi_ride/Models/fares.dart';
+import 'package:gidi_ride/Models/favorite_places.dart';
+import 'package:gidi_ride/Models/general_promotion.dart';
+import 'package:gidi_ride/Models/payment_method.dart';
 import 'package:gidi_ride/Models/reviews.dart';
 import 'package:gidi_ride/Users/home_user.dart';
 import 'package:gidi_ride/Utility/MyColors.dart';
@@ -10,24 +14,24 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_rating/flutter_rating.dart';
 
 class ReviewDriver extends StatefulWidget {
-  String driver_email;
+  String driver_email, trip_total_price, current_trip_id;
 
-  ReviewDriver(this.driver_email);
+  ReviewDriver(this.driver_email, this.trip_total_price, this.current_trip_id);
 
   @override
   State<StatefulWidget> createState() => _ReviewDriver();
 }
 
 class _ReviewDriver extends State<ReviewDriver> {
-
   DriverDetails driverDetails;
   Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
-  String _email='',_name='';
+  String _email = '', _name = '';
   final formKey = new GlobalKey<FormState>();
   String comment;
   double rating = 0.0;
   double total_rating = 0.0;
   bool _inAsyncCall = false;
+  DataSnapshot snapshot;
 
   @override
   void initState() {
@@ -35,21 +39,23 @@ class _ReviewDriver extends State<ReviewDriver> {
     super.initState();
   }
 
-  Future<void> getDriverDetails() async{
-    DatabaseReference driverRef = FirebaseDatabase.instance.reference().child(
-        'drivers/${widget.driver_email.replaceAll('.', ',')}');
-    await driverRef.child('signup').once().then((snapshot){
+  Future<void> getDriverDetails() async {
+    DatabaseReference driverRef = FirebaseDatabase.instance
+        .reference()
+        .child('drivers/${widget.driver_email.replaceAll('.', ',')}');
+    await driverRef.child('signup').once().then((snapshot) {
       setState(() {
         driverDetails = DriverDetails.fromSnapshot(snapshot);
       });
     });
   }
 
-  Future<void> getDriverReviews() async{
-    DatabaseReference driverRef = FirebaseDatabase.instance.reference().child(
-        'drivers/${widget.driver_email.replaceAll('.', ',')}');
-    await driverRef.child('reviews').once().then((snapshot){
-      if(snapshot.value != null){
+  Future<void> getDriverReviews() async {
+    DatabaseReference driverRef = FirebaseDatabase.instance
+        .reference()
+        .child('drivers/${widget.driver_email.replaceAll('.', ',')}');
+    await driverRef.child('reviews').once().then((snapshot) {
+      if (snapshot.value != null) {
         setState(() {
           for (var value in snapshot.value.values) {
             Reviews reviews = new Reviews.fromJson(value);
@@ -58,6 +64,16 @@ class _ReviewDriver extends State<ReviewDriver> {
           }
         });
       }
+    });
+  }
+
+  Future<void> getIncomingOrderDetails() async {
+    DatabaseReference tripRef2 = FirebaseDatabase.instance.reference().child(
+        'users/${_email.replaceAll('.', ',')}/trips/incoming/${widget.current_trip_id}');
+    tripRef2.once().then((snapshot) {
+      setState(() {
+        this.snapshot = snapshot;
+      });
     });
   }
 
@@ -70,19 +86,19 @@ class _ReviewDriver extends State<ReviewDriver> {
         _name = pref.getString('fullname');
       });
     });
+    getIncomingOrderDetails();
     getDriverDetails();
     getDriverReviews();
     return new Scaffold(
         backgroundColor: Color(MyColors().primary_color),
         appBar: new AppBar(
-          title:  new Text('Rate Driver',
+          title: new Text('Rate Driver',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 25.0,
               )),
         ),
-        body:
-        new ModalProgressHUD(
+        body: new ModalProgressHUD(
             inAsyncCall: _inAsyncCall,
             opacity: 0.5,
             progressIndicator: CircularProgressIndicator(),
@@ -90,9 +106,9 @@ class _ReviewDriver extends State<ReviewDriver> {
                 color: Color(MyColors().button_text_color),
                 margin: EdgeInsets.all(20.0),
                 child: new ListView(
-              scrollDirection: Axis.vertical,
-              children: buildPage(),
-            ))));
+                  scrollDirection: Axis.vertical,
+                  children: buildPage(),
+                ))));
   }
 
   List<Widget> buildPage() {
@@ -106,16 +122,20 @@ class _ReviewDriver extends State<ReviewDriver> {
                   shape: BoxShape.circle,
                   image: new DecorationImage(
                     fit: BoxFit.cover,
-                    image: (driverDetails != null) ? new NetworkImage(driverDetails.image) : AssetImage('user_dp.png'),
+                    image: (driverDetails != null)
+                        ? new NetworkImage(driverDetails.image)
+                        : AssetImage('user_dp.png'),
                   )))),
       new Container(
           margin: EdgeInsets.only(top: 20.0),
           child: new Center(
-            child: (driverDetails != null) ? new Text(driverDetails.fullname,
-                style: TextStyle(
-                    fontSize: 22.0,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black)) : new Text(''),
+            child: (driverDetails != null)
+                ? new Text(driverDetails.fullname,
+                    style: TextStyle(
+                        fontSize: 22.0,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black))
+                : new Text(''),
           )),
       new Container(
           margin: EdgeInsets.all(20.0),
@@ -131,7 +151,7 @@ class _ReviewDriver extends State<ReviewDriver> {
                             : null,
                         onSaved: (value) => comment = value,
                         decoration:
-                        new InputDecoration(labelText: 'Enter Commenent'),
+                            new InputDecoration(labelText: 'Enter Commenent'),
                       )
                     ],
                   ),
@@ -189,16 +209,15 @@ class _ReviewDriver extends State<ReviewDriver> {
     }
   }
 
-  void uploadRatings() {
+  Future<void> uploadRatings() async {
     try {
       DatabaseReference ref = FirebaseDatabase.instance
           .reference()
           .child('drivers')
-          .child(widget.driver_email
-          .replaceAll('.', ','))
+          .child(widget.driver_email.replaceAll('.', ','))
           .child('reviews');
       String id = ref.push().key;
-      ref.push().set({
+      await ref.push().set({
         'id': id,
         'username': _name,
         'user_email': _email,
@@ -217,16 +236,55 @@ class _ReviewDriver extends State<ReviewDriver> {
     }
   }
 
-  void deleteTripStatusForUser() {
+  Future<void> deleteTripStatusForUser() async {
     try {
+      FavoritePlaces fp =
+          FavoritePlaces.fromJson(snapshot.value['current_location']);
+      FavoritePlaces fp2 =
+          FavoritePlaces.fromJson(snapshot.value['destination']);
+      GeneralPromotions gp =
+          GeneralPromotions.fromJson(snapshot.value['promotion']);
+      PaymentMethods pm =
+          PaymentMethods.fromJson(snapshot.value['payment_method']);
+      Fares fares = Fares.fromJson(snapshot.value['fare']);
       DatabaseReference ref = FirebaseDatabase.instance
           .reference()
           .child('users')
           .child(_email.replaceAll('.', ','))
-          .child('trips')
-          .child('status');
-      ref.remove().then((complete) {
-        calculateTotalStars();
+          .child('trips');
+
+      await ref.child('past/${widget.current_trip_id}').set({
+        'id': snapshot.value['id'].toString(),
+        'current_location': fp.toJSON(),
+        'destination': fp2.toJSON(),
+        'trip_distance': snapshot.value['trip_distance'].toString(),
+        'trip_duration': snapshot.value['trip_duration'].toString(),
+        'payment_method': (snapshot.value['card_trip']) ? pm.toJSON() : 'cash',
+        'vehicle_type': snapshot.value['vehicle_type'].toString(),
+        'promotion': (gp != null) ? gp.toJSON() : 'no_promo',
+        'card_trip': (snapshot.value['card_trip']) ? true : false,
+        'promo_used': (gp != null) ? true : false,
+        'scheduled_date': snapshot.value['id'].toString(),
+        'status': 'past',
+        'created_date': snapshot.value['created_date'].toString(),
+        'price_range': snapshot.value['price_range'].toString(),
+        'trip_total_price': snapshot.value['trip_total_price'].toString(),
+        'fare': fares.toJSON(),
+        'assigned_driver': snapshot.value['assigned_driver'].toString()
+      }).whenComplete(() {
+        ref.child('status').remove().then((complete) {
+          ref
+              .child('incoming/${widget.current_trip_id}')
+              .remove()
+              .then((complete) {
+            DatabaseReference genRef = FirebaseDatabase.instance
+                .reference()
+                .child('general_trips/${widget.current_trip_id}');
+            genRef.remove().then((complete) {
+              calculateTotalStars();
+            });
+          });
+        });
       });
     } catch (e) {
       setState(() {
@@ -236,7 +294,7 @@ class _ReviewDriver extends State<ReviewDriver> {
     }
   }
 
-  void calculateTotalStars() {
+  Future<void> calculateTotalStars() async {
     double tt = total_rating + rating;
     try {
       DatabaseReference ref = FirebaseDatabase.instance
@@ -244,7 +302,7 @@ class _ReviewDriver extends State<ReviewDriver> {
           .child('drivers')
           .child(widget.driver_email.replaceAll('.', ','))
           .child('signup');
-      ref.push().set({
+      await ref.update({
         'rating': '$tt',
       }).then((complete) {
         setState(() {
