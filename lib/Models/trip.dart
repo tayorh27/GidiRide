@@ -22,27 +22,27 @@ class CurrentTrip {
   Fares fare;
 
   CurrentTrip.fromSnapshot(DataSnapshot snapshot) {
-    id = snapshot.value['id'];
+    id = snapshot.value['id'].toString();
     current_location =
-        FavoritePlaces.fromSnapshot(snapshot.value['current_location']);
-    destination = FavoritePlaces.fromSnapshot(snapshot.value['destination']);
-    trip_distance = snapshot.value['trip_distance'];
-    trip_duration = snapshot.value['trip_duration'];
+        FavoritePlaces.fromJson(snapshot.value['current_location']);
+    destination = FavoritePlaces.fromJson(snapshot.value['destination']);
+    trip_distance = snapshot.value['trip_distance'].toString();
+    trip_duration = snapshot.value['trip_duration'].toString();
     payment_method = (snapshot.value['card_trip'])
-        ? PaymentMethods.fromSnapShot(snapshot.value['payment_method'])
+        ? PaymentMethods.fromJson(snapshot.value['payment_method'])
         : null;
-    vehicle_type = snapshot.value['vehicle_type'];
+    vehicle_type = snapshot.value['vehicle_type'].toString();
     promotion = (snapshot.value['promo_used'])
-        ? GeneralPromotions.fromSnapShot(snapshot.value['promotion'])
+        ? GeneralPromotions.fromJson(snapshot.value['promotion'])
         : null;
     card_trip = snapshot.value['card_trip'];
     promo_used = snapshot.value['promo_used'];
     scheduled_date = snapshot.value['scheduled_date'];
-    status = snapshot.value['status'];
-    created_date = snapshot.value['created_date'];
-    price_range = snapshot.value['price_range'];
-    trip_total_price = snapshot.value['trip_total_price'];
-    fare = Fares.fromSnapshot(snapshot.value['fare']);
-    assigned_driver = snapshot.value['assigned_driver'];
+    status = snapshot.value['status'].toString();
+    created_date = snapshot.value['created_date'].toString();
+    price_range = snapshot.value['price_range'].toString();
+    trip_total_price = snapshot.value['trip_total_price'].toString();
+    fare = Fares.fromJson(snapshot.value['fare']);
+    assigned_driver = snapshot.value['assigned_driver'].toString();
   }
 }

@@ -61,7 +61,7 @@ class _TripInfo extends State<TripInfo> {
             }),
       ),
       body: new Container(
-        margin: EdgeInsets.only(top: 20.0),
+        margin: EdgeInsets.only(top: 10.0),
         child: ListView(
           scrollDirection: Axis.vertical,
           children: <Widget>[
@@ -99,14 +99,15 @@ class _TripInfo extends State<TripInfo> {
             ),
             new Container(
               child: new ListTile(
-                leading: CircleAvatar(
-                  radius: 30.0,
-                  child: Image.network(
-                    driver_image,
-                    height: 60.0,
+                leading: new Container(
                     width: 60.0,
-                  ),
-                ),
+                    height: 60.0,
+                    decoration: new BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: new DecorationImage(
+                          fit: BoxFit.cover,
+                          image: NetworkImage(driver_image),
+                        ))),
                 title: new Text(
                   'Your trip with $driver_name',
                   style: TextStyle(
@@ -212,7 +213,7 @@ class _TripInfo extends State<TripInfo> {
         FavoritePlaces.fromJson(widget.snapshot.value['current_location']);
     FavoritePlaces fp_end =
         FavoritePlaces.fromJson(widget.snapshot.value['destination']);
-    return 'https://maps.googleapis.com/maps/api/staticmap?center=${fp_start.latitude},${fp_start.longitude}&zoom=15&size=300x150&markers=size:tiny%7Ccolor:green%7C${fp_start.latitude},${fp_start.longitude}&markers=size:tiny%7Ccolor:red%7C${fp_end.latitude},${fp_end.longitude}&key=$api_key';
+    return 'https://maps.googleapis.com/maps/api/staticmap?center=${fp_start.latitude},${fp_start.longitude}&zoom=15&size=${(MediaQuery.of(context).size.width - 40).toInt()}x150&markers=size:tiny%7Ccolor:green%7C${fp_start.latitude},${fp_start.longitude}&markers=size:tiny%7Ccolor:red%7C${fp_end.latitude},${fp_end.longitude}&key=$api_key';
   }
 
   Future<void> getDriverInfo() async {

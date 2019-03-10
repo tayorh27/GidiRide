@@ -103,8 +103,7 @@ class _ReviewDriver extends State<ReviewDriver> {
             opacity: 0.5,
             progressIndicator: CircularProgressIndicator(),
             child: new Container(
-                color: Color(MyColors().button_text_color),
-                margin: EdgeInsets.all(20.0),
+                margin: EdgeInsets.only(left: 20.0, right: 20.0, bottom: 20.0, top: 5.0),
                 child: new ListView(
                   scrollDirection: Axis.vertical,
                   children: buildPage(),
@@ -117,7 +116,7 @@ class _ReviewDriver extends State<ReviewDriver> {
           child: new Container(
               width: 100.0,
               height: 100.0,
-              margin: EdgeInsets.only(top: 50.0),
+              margin: EdgeInsets.only(top: 10.0),
               decoration: new BoxDecoration(
                   shape: BoxShape.circle,
                   image: new DecorationImage(
@@ -134,7 +133,7 @@ class _ReviewDriver extends State<ReviewDriver> {
                     style: TextStyle(
                         fontSize: 22.0,
                         fontWeight: FontWeight.w700,
-                        color: Colors.black))
+                        color: Colors.white))
                 : new Text(''),
           )),
       new Container(
@@ -151,14 +150,14 @@ class _ReviewDriver extends State<ReviewDriver> {
                             : null,
                         onSaved: (value) => comment = value,
                         decoration:
-                            new InputDecoration(labelText: 'Enter Commenent'),
+                            new InputDecoration(labelText: 'Enter Commenent',fillColor: Colors.white),
                       )
                     ],
                   ),
                 )),
           )),
       new Container(
-          margin: EdgeInsets.all(30.0),
+          margin: EdgeInsets.all(10.0),
           child: new Center(
             child: new StarRating(
               rating: rating,

@@ -371,6 +371,7 @@ class _UserLogin extends State<UserLogin> {
             setState(() {
               _inAsyncCall = false;
             });
+            FirebaseAuth.instance.signOut();
             new Utils().neverSatisfied(context, 'Error',
                 'Sorry you have been blocked. Please contact support.');
             return;
@@ -386,6 +387,10 @@ class _UserLogin extends State<UserLogin> {
             });
             return;
           }
+          if(msgId.isNotEmpty){
+            gUser.msgId = msgId;
+            getUser.update({'msgId':msgId});
+          }
           utils.saveUserInfo(gUser);
           setState(() {
             _inAsyncCall = false;
@@ -400,6 +405,7 @@ class _UserLogin extends State<UserLogin> {
           setState(() {
             _inAsyncCall = false;
           });
+          FirebaseAuth.instance.signOut();
           new Utils().neverSatisfied(context, 'Error', 'User does not exist.');
         }
       });

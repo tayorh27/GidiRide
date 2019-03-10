@@ -100,7 +100,8 @@ class _MapFragment extends State<MapFragment> {
   bool ride_option_selected_car = false;
   bool ride_option_selected_bike = false;
 
-  String appBarTitle = 'Rider arrives in ';
+  String appBarTitle = 'Driver arrives in --';
+  bool isPromoApplied = false;
 
   @override
   void initState() {
@@ -221,7 +222,7 @@ class _MapFragment extends State<MapFragment> {
           bearing: 90.0,
           target: LatLng(lat, lng),
           tilt: 30.0,
-          zoom: 25.0,
+          zoom: 15.0,
         ),
       ));
       mapController.addMarker(MarkerOptions(
@@ -248,9 +249,12 @@ class _MapFragment extends State<MapFragment> {
           position: LatLng(lat, lng),
           alpha: 1.0,
           draggable: false,
-          icon: BitmapDescriptor.fromAsset('map_car.png'),
-          infoWindowText:
-              InfoWindowText('Driver location', '${driverDetails.fullname}')));
+          icon: BitmapDescriptor.fromAsset('assets/map_car.png'),
+          infoWindowText: InfoWindowText(
+              'Driver location',
+              (driverDetails.fullname == null)
+                  ? ''
+                  : '${driverDetails.fullname}')));
     }
     if (dialogType == DialogType.driving) {
       if (!_locationSubscription.isPaused) {
@@ -303,6 +307,7 @@ class _MapFragment extends State<MapFragment> {
 
   @override
   Widget build(BuildContext context) {
+    isPromoApplied = false;
 //    if(_locationSubscription != null){
 //      if(!_locationSubscription.isPaused){
 //        _locationSubscription.resume();
@@ -363,7 +368,7 @@ class _MapFragment extends State<MapFragment> {
                       tiltGesturesEnabled: true,
                       zoomGesturesEnabled: true),
                 ),
-                new Container(
+                (currentTrip != null && driverDetails != null) ? Text('') : new Container(
                     margin: EdgeInsets.only(top: 60.0, left: 13.0, right: 13.0),
                     child: new Column(
                       children: <Widget>[
@@ -481,13 +486,18 @@ class _MapFragment extends State<MapFragment> {
                               ),
                             ),
                             new ListTile(
-                                title: (!isCash)
-                                    ? Text(
-                                        '${(_method != null) ? '•••• ${_method.number}' : ''}')
-                                    : new Text('Cash',
-                                        style: TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 16.0)),
+                                title: Row(
+                                  children: <Widget>[
+                                    (!isCash)
+                                        ? Text(
+                                            '${(_method != null) ? '•••• ${_method.number}' : ''}')
+                                        : new Text('Cash',
+                                            style: TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 16.0)),
+                                    //(isPromoApplied) ? buildPromo('Promo Applied') : Text('')
+                                  ],
+                                ),
                                 onTap: () {
                                   _changePaymentMethod();
                                 },
@@ -583,9 +593,47 @@ class _MapFragment extends State<MapFragment> {
                         ),
                       )
                     : new Text(''),
-                (currentTrip != null) ? dialogTypeAfterRequest() : new Text('')
+                (currentTrip != null && driverDetails != null)
+                    ? dialogTypeAfterRequest()
+                    : new Text('')
               ],
             ))));
+  }
+
+  Widget buildPromo(String value) {
+    return Container(
+        height: 80.0,
+        width: 30.0,
+        child: Center(
+            child: Container(
+          height: 80.0,
+          width: 30.0,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+              shape: BoxShape.rectangle,
+              color: Color(MyColors().secondary_color),
+              border: Border(
+                  top: BorderSide(
+                      color: Color(MyColors().secondary_color), width: 2.0),
+                  left: BorderSide(
+                      color: Color(MyColors().secondary_color), width: 2.0),
+                  right: BorderSide(
+                      color: Color(MyColors().secondary_color), width: 2.0),
+                  bottom: BorderSide(
+                      color: Color(MyColors().secondary_color), width: 2.0)),
+              borderRadius: BorderRadius.all(Radius.circular(20.0))),
+          child: Center(
+            child: Text(
+              '$value',
+              style: TextStyle(
+                color: Color(MyColors().wrapper_color),
+                fontSize: 12.0,
+                fontWeight: FontWeight.w700,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        )));
   }
 
   Widget vehicleTypeOptions(String id, String image, String title, String seats,
@@ -675,9 +723,9 @@ class _MapFragment extends State<MapFragment> {
     if (dialogType == DialogType.arriving || dialogType == DialogType.driving) {
       return new Container(
         margin:
-            EdgeInsets.only(top: (MediaQuery.of(context).size.height - 250)),
+            EdgeInsets.only(top: (MediaQuery.of(context).size.height - 300)),
         alignment: Alignment.bottomCenter,
-        height: 250.0,
+        height: 300.0,
         width: MediaQuery.of(context).size.width,
         color: Colors.white,
         child: new Column(
@@ -689,8 +737,8 @@ class _MapFragment extends State<MapFragment> {
               leading: new Column(
                 children: <Widget>[
                   new Container(
-                      width: 100.0,
-                      height: 100.0,
+                      width: 60.0,
+                      height: 60.0,
                       decoration: new BoxDecoration(
                           shape: BoxShape.circle,
                           image: new DecorationImage(
@@ -701,8 +749,22 @@ class _MapFragment extends State<MapFragment> {
                           ))),
                   new Container(
                     decoration: BoxDecoration(
+                        shape: BoxShape.rectangle,
+                        color: Colors.grey,
+                        border: Border(
+                            top: BorderSide(
+                                color: Color(MyColors().secondary_color),
+                                width: 2.0),
+                            left: BorderSide(
+                                color: Color(MyColors().secondary_color),
+                                width: 2.0),
+                            right: BorderSide(
+                                color: Color(MyColors().secondary_color),
+                                width: 2.0),
+                            bottom: BorderSide(
+                                color: Color(MyColors().secondary_color),
+                                width: 2.0)),
                         borderRadius: BorderRadius.all(Radius.circular(5.0))),
-                    color: Colors.grey,
                     width: 50.0,
                     height: 25.0,
                     child: new Row(
@@ -710,12 +772,15 @@ class _MapFragment extends State<MapFragment> {
                         new Icon(
                           Icons.star,
                           size: 18.0,
+                          color: Color(MyColors().wrapper_color),
                         ),
                         new Text(
-                          driverDetails.rating,
+                          (driverDetails != null)
+                              ? driverDetails.rating
+                              : '0.0',
                           style: TextStyle(
-                            fontSize: 10.0,
-                            color: Colors.grey,
+                            fontSize: 16.0,
+                            color: Color(MyColors().wrapper_color),
                             fontWeight: FontWeight.w500,
                           ),
                         )
@@ -728,23 +793,26 @@ class _MapFragment extends State<MapFragment> {
               title: new Text(
                 driverDetails.fullname,
                 style: TextStyle(
-                  fontSize: 12.0,
+                  fontSize: 16.0,
                   color: Colors.black,
                   fontWeight: FontWeight.w900,
                 ),
               ),
               subtitle: new Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
+                  Container(height: 5.0,),
                   new Text(driverDetails.vehicle_model,
                       style: TextStyle(
-                        fontSize: 10.0,
+                        fontSize: 16.0,
                         color: Colors.grey,
                         fontWeight: FontWeight.w500,
                       )),
                   new Text(driverDetails.vehicle_plate_number,
                       style: TextStyle(
-                        fontSize: 10.0,
+                        fontSize: 16.0,
                         color: Colors.grey,
                         fontWeight: FontWeight.w500,
                       ))
@@ -949,9 +1017,11 @@ class _MapFragment extends State<MapFragment> {
       'current_ride_id': id,
       'current_ride_status': 'awaiting response'
     }).whenComplete(() {
-      String subj = "A ride has been booked";
-      String message = "A user of email address";
-      var url = "http://gidiride.ng/emailsending/bookings.php?subject=$subj&";
+      String subj = "A user just booked for a ride";
+      String message =
+          "Below are details of the ride booked.\n\nRide ID: $id\nUser Fullname: $_name\nUser Email Address: $_email\nUser Mobile Number: $_number\nScheduled At: $_date_scheduled\nPickup Address: ${current_location.loc_address}\nDrop off Address: ${destination_location.loc_address}\n\nGidiRide Team";
+      var url =
+          "http://gidiride.ng/emailsending/sendbooking.php.php?subject=$subj&body=$message";
       http.get(url).then((response) {
         setState(() {
           _inAsyncCall = false;
@@ -1046,9 +1116,21 @@ class _MapFragment extends State<MapFragment> {
           'users/${_email.replaceAll('.', ',')}/promotions/$promotion_type');
       await promoRef2.once().then((snapshot) {
         if (snapshot != null) {
-          setState(() {
-            _general_promotion = GeneralPromotions.fromSnapShot(snapshot);
-          });
+          GeneralPromotions check_validity =
+              GeneralPromotions.fromSnapShot(snapshot);
+          List<String> gp_date = check_validity.expires.split('.');
+          DateTime current = DateTime.now();
+          DateTime expire = DateTime(int.parse(gp_date[2]),
+              int.parse(gp_date[1]), int.parse(gp_date[0]));
+          int td = expire.difference(current).inMilliseconds;
+          if (check_validity.status &&
+              td > 0 &&
+              int.parse(check_validity.number_of_rides_used) > 0) {
+            setState(() {
+              _general_promotion = GeneralPromotions.fromSnapShot(snapshot);
+              isPromoApplied = true;
+            });
+          }
         }
       });
     }
@@ -1060,9 +1142,10 @@ class _MapFragment extends State<MapFragment> {
         .child('users/${_email.replaceAll('.', ',')}/trips/status');
     statusRef.onValue.listen((snapshot) {
       if (snapshot.snapshot.value != null) {
-        String val = snapshot.snapshot.value['current_ride_status'];
+        String val = snapshot.snapshot.value['current_ride_status'].toString();
         setState(() {
-          current_trip_id = snapshot.snapshot.value['current_ride_id'];
+          current_trip_id =
+              snapshot.snapshot.value['current_ride_id'].toString();
           isAlreadyBooked = true;
           if (val == 'driver assigned') {
             dialogType = DialogType.arriving;
@@ -1175,9 +1258,8 @@ class _MapFragment extends State<MapFragment> {
 
   Future<void> getCurrentTripDetails(
       String current_trip_id, bool review_driver) async {
-    DatabaseReference tripRef2 = FirebaseDatabase.instance
-        .reference()
-        .child('users/${_email.replaceAll('.', ',')}/trips/incoming/$current_trip_id');
+    DatabaseReference tripRef2 = FirebaseDatabase.instance.reference().child(
+        'users/${_email.replaceAll('.', ',')}/trips/incoming/$current_trip_id');
     await tripRef2.once().then((snapshot) {
       setState(() {
         currentTrip = CurrentTrip.fromSnapshot(snapshot);
@@ -1185,9 +1267,8 @@ class _MapFragment extends State<MapFragment> {
         destination_location = currentTrip.destination;
         if (review_driver) {
           Route route = MaterialPageRoute(
-              builder: (context) => ReviewDriver(
-                  currentTrip.assigned_driver, currentTrip.trip_total_price,
-                  current_trip_id));
+              builder: (context) => ReviewDriver(currentTrip.assigned_driver,
+                  currentTrip.trip_total_price, current_trip_id));
           Navigator.pushReplacement(context, route);
         }
         if (currentTrip.assigned_driver != 'none' &&

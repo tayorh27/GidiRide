@@ -26,57 +26,39 @@ class _MyTrips extends State<MyTrips> {
     DatabaseReference _ref1 = FirebaseDatabase.instance
         .reference()
         .child('users/${_email.replaceAll('.', ',')}/trips');
-    await _ref1.child('past').once().asStream().toList().then((val) {//.asStream().length.
-      if (val != null) {
+    await _ref1.child('past').once().then((val) {
+      //.asStream().length.
+      if (val.value != null) {
         setState(() {
           //Map map = val.value;
-          _Fcount = val.length;
-        });
-      }else{
-        setState(() {
-          _Fcount = 0;
+          _Fcount = 1;
         });
       }
     });
-    await _ref1.child('incoming').once().asStream().toList().then((val) {
-      if (val != null) {
+    await _ref1.child('incoming').once().then((val) {
+      if (val.value != null) {
         setState(() {
           //Map map = val.value;
-          _Scount = val.length;
-        });
-      }else{
-        setState(() {
-          _Scount = 0;
+          _Scount = 1;
         });
       }
     });
-//    _ref1.child('incoming').once().then((val) {
-//      if (val.value == null) {
-//        setState(() {
-//          _Fcount = 0;
-//          _Scount = 0;
-//        });
-//      } else {
-//        int f = 0, s = 0;
-//        for (var value in val.value.values) {
-//          print('trip values are $value');
-//          Map<String, dynamic> vv = json.decode(value);
-//          String status = vv['status'];
-//          if(status != null) {
-//            if (status == 'past') {
-//              f = f + 1;
-//            } else if (status == 'incoming') {
-//              s = s + 1;
-//            }
-//          }
-//        }
-//        setState(() {
-//          _Fcount = f;
-//          _Scount = s;
-//        });
-//      }
-//    });
   }
+
+  var months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sept",
+    "Oct",
+    "Nov",
+    "Dec"
+  ];
 
   @override
   void initState() {
@@ -140,38 +122,60 @@ class _MyTrips extends State<MyTrips> {
             //String status = snapshot.value['status'].toString();
             FavoritePlaces fp =
                 FavoritePlaces.fromJson(snapshot.value['current_location']);
-            return new SizeTransition(
-              sizeFactor: animation,
-              child: new SizedBox(
-                child: new Column(
-                  children: <Widget>[
-                    Container(
-                        child: ListTile(
-                      title: Text(fp.loc_name,
-                          style: TextStyle(fontWeight: FontWeight.w500)),
-                      subtitle: new Column(
-                        children: <Widget>[
-                          new Text(snapshot.value['scheduled_date'].toString(), style: TextStyle(fontWeight: FontWeight.w200)),
-                          new Text(snapshot.value['vehicle_type']
-                              .toString()
-                              .toUpperCase(), style: TextStyle(color: Color(MyColors().secondary_color))),
-                        ],
-                      ),
-                      leading: Icon(
-                        Icons.arrow_forward_ios,
-                        color: Colors.black,
-                      ),
-                      onTap: () {
-                         Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => TripInfo(snapshot)),
-                        );
-                      },
-                    )),
-                  ],
-                ),
-              ),
-            );
+            DateTime dt = DateTime.parse(snapshot.value['scheduled_date'].toString());
+            String date_sch = '${months[(dt.month - 1)]} ${dt.day}, ${dt.year}';
+            return new Padding(
+                padding: EdgeInsets.all(20.0),
+                child: SizeTransition(
+                  sizeFactor: animation,
+                  child: new SizedBox(
+                    child: new Column(
+                      children: <Widget>[
+                        Container(
+                            child: ListTile(
+                          title: Text(fp.loc_name,
+                              style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16.0)),
+                          subtitle: new Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            mainAxisSize: MainAxisSize.max,
+                            children: <Widget>[
+                              Container(height: 5.0,),
+                              new Text(
+                                  date_sch,
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.w500, fontSize: 14.0)),
+                              Container(height: 5.0,),
+                              new Text(
+                                  snapshot.value['vehicle_type']
+                                      .toString()
+                                      .toUpperCase(),
+                                  style: TextStyle(
+                                      color:
+                                          Color(MyColors().secondary_color))),
+                              Container(height: 5.0,),
+                            ],
+                          ),
+                          trailing: Icon(
+                            Icons.arrow_forward_ios,
+                            color: Colors.black,
+                          ),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => TripInfo(snapshot)),
+                            );
+                          },
+                        )),
+                        Divider(
+                          height: 1.0,
+                          color: Color(MyColors().button_text_color),
+                        ),
+                      ],
+                    ),
+                  ),
+                ));
           });
     } else {
       return new FirebaseAnimatedList(
@@ -275,7 +279,9 @@ class _MyTrips extends State<MyTrips> {
                     .child('users/${_email.replaceAll('.', ',')}/trips/$id')
                     .remove();
                 await delRef.child('general_trips/$id').remove();
-                await delRef.child('users/${_email.replaceAll('.', ',')}/trips/status').remove();
+                await delRef
+                    .child('users/${_email.replaceAll('.', ',')}/trips/status')
+                    .remove();
                 new Utils().showToast('Deleted successfully', false);
               },
             ),
