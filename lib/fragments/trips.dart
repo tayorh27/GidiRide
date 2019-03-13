@@ -322,8 +322,10 @@ class _MyTrips extends State<MyTrips> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          new Image.asset(
-            'header_logo.png',
+          new Icon(
+            Icons.cancel,
+            size: 64.0,
+            color: Color(MyColors().primary_color),
           ),
           new Text(
             'You have no data yet.',

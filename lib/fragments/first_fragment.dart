@@ -263,7 +263,8 @@ class _MapFragment extends State<MapFragment> {
         _locationSubscription.pause();
       }
       mapController.addMarker(MarkerOptions(
-          position: LatLng(lat, lng),
+          position: LatLng(double.parse(destination_location.latitude),
+              double.parse(destination_location.longitude)),
           alpha: 1.0,
           draggable: false,
           icon: BitmapDescriptor.defaultMarker,
@@ -369,7 +370,7 @@ class _MapFragment extends State<MapFragment> {
                       tiltGesturesEnabled: true,
                       zoomGesturesEnabled: true),
                 ),
-                (currentTrip != null && driverDetails != null)
+                (dialogType == DialogType.arriving && dialogType == DialogType.driving)
                     ? Text('')
                     : new Container(
                         margin:
@@ -1433,7 +1434,12 @@ class _MapFragment extends State<MapFragment> {
         String driver_distance = distance['text'];
         String driver_duration = duration['text'];
         setState(() {
-          appBarTitle = 'Rider arrives in $driver_duration';
+          if (dialogType == DialogType.arriving) {
+            appBarTitle = 'Rider arrives in $driver_duration';
+          }
+          if (dialogType == DialogType.driving) {
+            appBarTitle = 'Driving to destination';
+          }
         });
         updateMapCamera(lat, lng);
       }

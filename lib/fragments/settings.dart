@@ -64,14 +64,14 @@ class _Settings extends State<Settings> {
           scrollDirection: Axis.vertical,
           children: <Widget>[
             new Container(
-                margin: EdgeInsets.only(top: 20.0),
+                margin: EdgeInsets.only(top: 0.0),
                 color: Color(MyColors().button_text_color),
                 padding: EdgeInsets.all(8.0),
                 child: new ListTile(
                   leading: new Image.asset(
                     'user_dp.png',
-                    height: 96.0,
-                    width: 96.0,
+                    height: 60.0,
+                    width: 60.0,
                   ),
                   title: new Text(
                     _name,
