@@ -20,13 +20,13 @@
     <application
         android:name="io.flutter.app.FlutterApplication"
         android:appComponentFactory="whateverString"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/gr"
         android:label="Gidi Ride"
         tools:replace="android:label,android:appComponentFactory">
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyDlMdDnOh3BQtZhF8gku4Xq1uFB-ZhLdig" />
+            android:value="AIzaSyCPSnicnVW3upwwp5Q_MgOkh7FhP3-ab1I" />
 
         <activity
             android:name=".MainActivity"

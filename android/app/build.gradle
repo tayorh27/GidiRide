@@ -25,6 +25,10 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
+def keystorePropertiesFile = rootProject.file("key.properties")
+def keystoreProperties = new Properties()
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
 android {
     compileSdkVersion 28
     //aaptOptions.cruncherEnabled = false
@@ -48,6 +52,15 @@ android {
         versionName flutterVersionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
+    }
+
+    signingConfigs {
+        release {
+            storeFile file('gidiride.jks')
+            storePassword 'Godisgood101'
+            keyAlias 'gidi'
+            keyPassword 'Godisgood101'
+        }
     }
 
     buildTypes {
