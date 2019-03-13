@@ -12,6 +12,7 @@ import 'package:gidi_ride/Utility/Utils.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_rating/flutter_rating.dart';
+import 'package:http/http.dart' as http;
 
 class ReviewDriver extends StatefulWidget {
   String driver_email, trip_total_price, current_trip_id;
@@ -32,6 +33,12 @@ class _ReviewDriver extends State<ReviewDriver> {
   double total_rating = 0.0;
   bool _inAsyncCall = false;
   DataSnapshot snapshot;
+
+  FavoritePlaces fp;
+  FavoritePlaces fp2;
+  GeneralPromotions gp;
+  PaymentMethods pm;
+  Fares fares;
 
   @override
   void initState() {
@@ -103,7 +110,8 @@ class _ReviewDriver extends State<ReviewDriver> {
             opacity: 0.5,
             progressIndicator: CircularProgressIndicator(),
             child: new Container(
-                margin: EdgeInsets.only(left: 20.0, right: 20.0, bottom: 20.0, top: 5.0),
+                margin: EdgeInsets.only(
+                    left: 20.0, right: 20.0, bottom: 20.0, top: 5.0),
                 child: new ListView(
                   scrollDirection: Axis.vertical,
                   children: buildPage(),
@@ -149,8 +157,9 @@ class _ReviewDriver extends State<ReviewDriver> {
                             ? 'Please write a short comment'
                             : null,
                         onSaved: (value) => comment = value,
-                        decoration:
-                            new InputDecoration(labelText: 'Enter Commenent',fillColor: Colors.white),
+                        decoration: new InputDecoration(
+                            labelText: 'Enter Commenent',
+                            fillColor: Colors.white),
                       )
                     ],
                   ),
@@ -237,15 +246,15 @@ class _ReviewDriver extends State<ReviewDriver> {
 
   Future<void> deleteTripStatusForUser() async {
     try {
-      FavoritePlaces fp =
-          FavoritePlaces.fromJson(snapshot.value['current_location']);
-      FavoritePlaces fp2 =
-          FavoritePlaces.fromJson(snapshot.value['destination']);
-      GeneralPromotions gp =
-          GeneralPromotions.fromJson(snapshot.value['promotion']);
-      PaymentMethods pm =
-          PaymentMethods.fromJson(snapshot.value['payment_method']);
-      Fares fares = Fares.fromJson(snapshot.value['fare']);
+      fp = FavoritePlaces.fromJson(snapshot.value['current_location']);
+      fp2 = FavoritePlaces.fromJson(snapshot.value['destination']);
+      gp = (snapshot.value['promo_used'])
+          ? GeneralPromotions.fromJson(snapshot.value['promotion'])
+          : null;
+      pm = (snapshot.value['card_trip'])
+          ? PaymentMethods.fromJson(snapshot.value['payment_method'])
+          : null;
+      fares = Fares.fromJson(snapshot.value['fare']);
       DatabaseReference ref = FirebaseDatabase.instance
           .reference()
           .child('users')
@@ -263,7 +272,7 @@ class _ReviewDriver extends State<ReviewDriver> {
         'promotion': (gp != null) ? gp.toJSON() : 'no_promo',
         'card_trip': (snapshot.value['card_trip']) ? true : false,
         'promo_used': (gp != null) ? true : false,
-        'scheduled_date': snapshot.value['id'].toString(),
+        'scheduled_date': snapshot.value['scheduled_date'].toString(),
         'status': 'past',
         'created_date': snapshot.value['created_date'].toString(),
         'price_range': snapshot.value['price_range'].toString(),
@@ -304,12 +313,33 @@ class _ReviewDriver extends State<ReviewDriver> {
       await ref.update({
         'rating': '$tt',
       }).then((complete) {
-        setState(() {
-          _inAsyncCall = false;
+        String subj = "GidiRide Receipt";
+        DateTime dt =
+            DateTime.parse(snapshot.value['scheduled_date'].toString());
+        var days = [
+          "Sunday",
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday"
+        ];
+        String day = 'Your GidiRide Trip on ${days[(dt.weekday - 1)]}';
+        String payment_type = (pm == null) ? 'Cash' : '•••• ${pm.number}';
+        String total_amount = snapshot.value['trip_total_price'].toString();
+        String trip_distance = snapshot.value['trip_distance'].toString();
+        String trip_duration = snapshot.value['trip_duration'].toString();
+        var url =
+            "http://gidiride.ng/emailsending/receipt_rider.php?subject=$subj&sub_subject=$day&payment_type=$payment_type&total_amount=$total_amount&trip_distance=$trip_distance&trip_duration=$trip_duration&current_location=${fp.loc_address}&destination=${fp2.loc_address}&driver_image=${driverDetails.image}&driver_name=${driverDetails.fullname}";
+        http.get(url).then((response) {
+          setState(() {
+            _inAsyncCall = false;
+          });
+          new Utils().showToast('Thank you for choosing GidiRide', false);
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => UserHomePage()));
         });
-        new Utils().showToast('Thank you for choosing GidiRide', false);
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => UserHomePage()));
       });
     } catch (e) {
       setState(() {

@@ -14,18 +14,23 @@ import 'package:gidi_ride/fragments/payment.dart';
 import 'package:gidi_ride/fragments/settings.dart';
 import 'package:gidi_ride/fragments/trips.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class UserHomePage extends StatefulWidget {
   final drawerItems = [
-    new DrawerItem("Home", Image.asset('trips.png'), new Text('')),
-    new DrawerItem("Your Trips", Image.asset('trips.png'), new Text('')),
-    new DrawerItem("Payment", Image.asset('payment.png'), new Text('')),
-    new DrawerItem("Help", Image.asset('help.png'), new Text('')),
-    new DrawerItem("Free Rides", Image.asset('free_rides.png'), new Text('')),
-    new DrawerItem("Settings", Image.asset('settings.png'), new Text('')),
+    new DrawerItem("Home", sidebarIcons(innerIcon: Icons.home), new Text('')),
+    new DrawerItem(
+        "Your Trips", sidebarIcons(innerIcon: Icons.directions), new Text('')),
+    new DrawerItem(
+        "Payment", sidebarIcons(innerIcon: Icons.payment), new Text('')),
+    new DrawerItem("Help", sidebarIcons(innerIcon: Icons.help), new Text('')),
+    new DrawerItem("Free Rides", sidebarIcons(innerIcon: Icons.free_breakfast),
+        new Text('')),
+    new DrawerItem(
+        "Settings", sidebarIcons(innerIcon: Icons.settings), new Text('')),
     new DrawerItem(
         "Legal",
-        Image.asset('legal.png'),
+        sidebarIcons(innerIcon: Icons.pages),
         new Text(
           'v1.0',
           style: TextStyle(color: Colors.white),
@@ -36,16 +41,33 @@ class UserHomePage extends StatefulWidget {
   State<StatefulWidget> createState() => _UserHomePage();
 }
 
+Widget sidebarIcons({IconData innerIcon}) {
+  return Container(
+    width: 39.0,
+    height: 39.0,
+    decoration: new BoxDecoration(
+      shape: BoxShape.circle,
+      border: Border.all(color: Color(MyColors().secondary_color), width: 1.0),
+    ),
+    child: Icon(
+      innerIcon,
+      color: Colors.white,
+      size: 18.0,
+    ),
+  );
+}
+
 class DrawerItem {
   String title;
+
   //IconData icon;
   Widget icon;
   Widget trailing;
+
   DrawerItem(this.title, this.icon, this.trailing);
 }
 
 class _UserHomePage extends State<UserHomePage> {
-
   GlobalKey<ScaffoldState> _key = new GlobalKey<ScaffoldState>();
 
   Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
@@ -54,9 +76,8 @@ class _UserHomePage extends State<UserHomePage> {
   User user;
   bool isAppBar = false;
   bool isStack = true;
-  String _name ='', _email='';
+  String _name = '', _email = '';
   bool destination_entered = false;
-
 
   _getDrawerItemWidget(int pos) {
     switch (pos) {
@@ -64,16 +85,16 @@ class _UserHomePage extends State<UserHomePage> {
         return new MapFragment();
       case 1:
         _closeAppBar();
-      return new MyTrips();
+        return new MyTrips();
       case 2:
         _closeAppBar();
-      return new Payment(false);
+        return new Payment(false);
       case 3:
         _closeAppBar();
-      return new HelpPage();
+        return new HelpPage();
       case 4:
         _closeAppBar();
-      return new FreeRides();
+        return new FreeRides();
       case 5:
         _closeAppBar();
         return new Settings();
@@ -81,11 +102,11 @@ class _UserHomePage extends State<UserHomePage> {
         _closeAppBar();
         return new LegalPage();
       default:
-      return new MapFragment();
+        return new MapFragment();
     }
   }
 
-  _closeAppBar(){
+  _closeAppBar() {
     setState(() {
       isStack = false;
       isAppBar = false;
@@ -104,13 +125,15 @@ class _UserHomePage extends State<UserHomePage> {
   }
 
   _checkBlockStatus() async {
-    DatabaseReference checkBlock = FirebaseDatabase.instance.reference().child(
-        'users/${_email.replaceAll('.', ',')}/signup');
-    checkBlock.once().then((data){
+    DatabaseReference checkBlock = FirebaseDatabase.instance
+        .reference()
+        .child('users/${_email.replaceAll('.', ',')}/signup');
+    checkBlock.once().then((data) {
       bool userBlocked = data.value['userBlocked'];
-      if(userBlocked){
-        new Utils().neverSatisfied(context, 'User Blocked', 'Sorry you have been blocked from this account. Please contact support for futher assistance.');
-        _prefs.then((pref){
+      if (userBlocked) {
+        new Utils().neverSatisfied(context, 'User Blocked',
+            'Sorry you have been blocked from this account. Please contact support for futher assistance.');
+        _prefs.then((pref) {
           pref.clear();
         });
         FirebaseAuth.instance.signOut();
@@ -149,7 +172,8 @@ class _UserHomePage extends State<UserHomePage> {
       key: _key,
       appBar: (isAppBar)
           ? new AppBar(
-              title: new Text('')) //widget.drawerItems[_selectedDrawerIndex].title
+              title:
+                  new Text('')) //widget.drawerItems[_selectedDrawerIndex].title
           : null,
       drawer: new Drawer(
           child: new Container(
@@ -227,26 +251,49 @@ class _UserHomePage extends State<UserHomePage> {
                   ],
                 ),
               ]))),
-      body: (!isStack) ? _getDrawerItemWidget(_selectedDrawerIndex) : new Padding(padding: EdgeInsets.only(top: 25.0), child: new Stack(
-        fit: StackFit.passthrough,
-        children: <Widget>[
-          _getDrawerItemWidget(_selectedDrawerIndex),
-          (!destination_entered) ? new IconButton(icon: Icon(Icons.person_pin, color: Color(MyColors().primary_color),size: 48.0,), onPressed: (){_key.currentState.openDrawer();}) : new IconButton(icon: Icon(Icons.arrow_back, color: Color(MyColors().primary_color),size: 24.0,), onPressed: (){setCancelModeForDestination();}),
-        ],
-      )),
+      body: (!isStack)
+          ? _getDrawerItemWidget(_selectedDrawerIndex)
+          : new Padding(
+              padding: EdgeInsets.only(top: 25.0),
+              child: new Stack(
+                fit: StackFit.passthrough,
+                children: <Widget>[
+                  _getDrawerItemWidget(_selectedDrawerIndex),
+                  (!destination_entered)
+                      ? new IconButton(
+                          icon: Icon(
+                            Icons.person_pin,
+                            color: Color(MyColors().primary_color),
+                            size: 48.0,
+                          ),
+                          onPressed: () {
+                            _key.currentState.openDrawer();
+                          })
+                      : new IconButton(
+                          icon: Icon(
+                            Icons.arrow_back,
+                            color: Color(MyColors().primary_color),
+                            size: 24.0,
+                          ),
+                          onPressed: () {
+                            setCancelModeForDestination();
+                          }),
+                ],
+              )),
     );
   }
 
-  Future<void> listenForDestinationEntered() async{
-    DatabaseReference ref = FirebaseDatabase.instance.reference().child('users/${_email.replaceAll('.', ',')}/trips/current_trip_status');
-    await ref.once().then((val){
-      if(val != null){
+  Future<void> listenForDestinationEntered() async {
+    DatabaseReference ref = FirebaseDatabase.instance.reference().child(
+        'users/${_email.replaceAll('.', ',')}/trips/current_trip_status');
+    await ref.once().then((val) {
+      if (val != null) {
         String value = val.value;
-        if(value == 'request'){
+        if (value == 'request') {
           setState(() {
             destination_entered = true;
           });
-        }else if(value == 'none'){
+        } else if (value == 'none') {
           setState(() {
             destination_entered = false;
           });
@@ -255,14 +302,30 @@ class _UserHomePage extends State<UserHomePage> {
     });
   }
 
-  Future<void> setCancelModeForDestination() async{
-    DatabaseReference ref = FirebaseDatabase.instance.reference().child('users/${_email.replaceAll('.', ',')}/trips/current_trip_status');
-    await ref.set('none').whenComplete((){
+  Future<void> setCancelModeForDestination() async {
+    DatabaseReference ref = FirebaseDatabase.instance.reference().child(
+        'users/${_email.replaceAll('.', ',')}/trips/current_trip_status');
+    await ref.set('none').whenComplete(() {
       setState(() {
         destination_entered = false;
       });
     });
   }
 
-  void driverClick(){}
+  Future<Null> driverClick() async {
+    if (await canLaunch('https://gidiridedriver.page.link/Zi7X')) {
+      await launch('https://gidiridedriver.page.link/Zi7X',
+          forceSafariVC: true, forceWebView: true);
+    } else {
+      new Utils().showToast('Cannot open parameter.', false);
+    }
+  }
+
+  Future<Null> _launchURL(String url) async {
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
 }

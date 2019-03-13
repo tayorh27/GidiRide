@@ -15,7 +15,7 @@ class TripInfo extends StatefulWidget {
 }
 
 const api_key =
-    "AIzaSyBEtkYnNolbg_c7aKZkFuqlq_V_4TIyveI"; // "AIzaSyDlMdDnOh3BQtZhF8gku4Xq1uFB-ZhLdig";
+    "AIzaSyCPSnicnVW3upwwp5Q_MgOkh7FhP3-ab1I"; // "AIzaSyDlMdDnOh3BQtZhF8gku4Xq1uFB-ZhLdig";
 const ZendeskApiKey = '6F888hSdWpJ789mZlJnOZ2rgpuHaTUgP';
 
 class _TripInfo extends State<TripInfo> {
@@ -109,9 +109,13 @@ class _TripInfo extends State<TripInfo> {
                           image: NetworkImage(driver_image),
                         ))),
                 title: new Text(
-                  'Your trip with $driver_name',
+                  (widget.snapshot.value['status'].toString() == '1')
+                      ? 'Your trip with $driver_name'
+                      : 'YOU CANCELED',
                   style: TextStyle(
-                      color: Colors.white,
+                      color: (widget.snapshot.value['status'].toString() == '1')
+                          ? Colors.white
+                          : Colors.red,
                       fontSize: 16.0,
                       fontWeight: FontWeight.w500),
                 ),

@@ -34,10 +34,10 @@ class MapFragment extends StatefulWidget {
   State<StatefulWidget> createState() => _MapFragment();
 }
 
-const kGoogleApiKey = "AIzaSyBEtkYnNolbg_c7aKZkFuqlq_V_4TIyveI";
+const kGoogleApiKey = "AIzaSyCPSnicnVW3upwwp5Q_MgOkh7FhP3-ab1I";
 //"AIzaSyDlMdDnOh3BQtZhF8gku4Xq1uFB-ZhLdig"; //"AIzaSyB_2OfHqOnXS577kNUKckBB0yu49g8Rw40";
 const api_key =
-    "AIzaSyBEtkYnNolbg_c7aKZkFuqlq_V_4TIyveI"; // "AIzaSyDlMdDnOh3BQtZhF8gku4Xq1uFB-ZhLdig";
+    "AIzaSyCPSnicnVW3upwwp5Q_MgOkh7FhP3-ab1I"; // "AIzaSyDlMdDnOh3BQtZhF8gku4Xq1uFB-ZhLdig";
 GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: kGoogleApiKey);
 final homeScaffoldKey = GlobalKey<ScaffoldState>();
 final searchScaffoldKey = GlobalKey<ScaffoldState>();
@@ -249,7 +249,9 @@ class _MapFragment extends State<MapFragment> {
           position: LatLng(lat, lng),
           alpha: 1.0,
           draggable: false,
-          icon: BitmapDescriptor.fromAsset('assets/map_car.png'),
+          icon: (currentTrip.vehicle_type.toLowerCase() == 'car')
+              ? BitmapDescriptor.fromAsset('assets/gidicar.png')
+              : BitmapDescriptor.fromAsset('assets/gidibike.png'),
           infoWindowText: InfoWindowText(
               'Driver location',
               (driverDetails.fullname == null)
@@ -307,7 +309,6 @@ class _MapFragment extends State<MapFragment> {
 
   @override
   Widget build(BuildContext context) {
-    isPromoApplied = false;
 //    if(_locationSubscription != null){
 //      if(!_locationSubscription.isPaused){
 //        _locationSubscription.resume();
@@ -368,77 +369,80 @@ class _MapFragment extends State<MapFragment> {
                       tiltGesturesEnabled: true,
                       zoomGesturesEnabled: true),
                 ),
-                (currentTrip != null && driverDetails != null) ? Text('') : new Container(
-                    margin: EdgeInsets.only(top: 60.0, left: 13.0, right: 13.0),
-                    child: new Column(
-                      children: <Widget>[
-                        new Container(
-                            color: Color(MyColors().primary_color),
-                            child: new ListTile(
-                              leading: (!isRefreshing)
-                                  ? Icon(
-                                      Icons.my_location,
-                                      color: Colors.green,
-                                    )
-                                  : new Container(
-                                      height: 18.0,
-                                      width: 18.0,
-                                      child: CircularProgressIndicator(
-                                        value: null,
-                                      ),
-                                    ),
-                              trailing: Icon(
-                                Icons.keyboard_arrow_right,
-                                color: Colors.white,
-                              ),
-                              title: Text(
-                                (current_location == null)
-                                    ? 'Your current location'
-                                    : current_location.loc_name,
-                                style: TextStyle(
-                                    color: Colors.white, fontSize: 16.0),
-                              ),
-                              onTap: (currentTrip == null)
-                                  ? () {
-                                      setState(() {
-                                        address_type = 'current';
-                                      });
-                                      _buttonTapped();
-                                    }
-                                  : null,
-                            )),
-                        new Container(
-                          height: 2.0,
-                        ),
-                        new Container(
-                            color: Color(MyColors().primary_color),
-                            child: new ListTile(
-                              leading: Icon(
-                                Icons.directions,
-                                color: Colors.red,
-                              ),
-                              trailing: Icon(
-                                Icons.keyboard_arrow_right,
-                                color: Colors.white,
-                              ),
-                              title: Text(
-                                (destination_location == null)
-                                    ? 'Enter Destination'
-                                    : destination_location.loc_name,
-                                style: TextStyle(
-                                    color: Colors.white, fontSize: 16.0),
-                              ),
-                              onTap: (currentTrip == null)
-                                  ? () {
-                                      setState(() {
-                                        address_type = 'destination';
-                                      });
-                                      _buttonTapped();
-                                    }
-                                  : null,
-                            )),
-                      ],
-                    )),
+                (currentTrip != null && driverDetails != null)
+                    ? Text('')
+                    : new Container(
+                        margin:
+                            EdgeInsets.only(top: 60.0, left: 13.0, right: 13.0),
+                        child: new Column(
+                          children: <Widget>[
+                            new Container(
+                                color: Color(MyColors().primary_color),
+                                child: new ListTile(
+                                  leading: (!isRefreshing)
+                                      ? Icon(
+                                          Icons.my_location,
+                                          color: Colors.green,
+                                        )
+                                      : new Container(
+                                          height: 18.0,
+                                          width: 18.0,
+                                          child: CircularProgressIndicator(
+                                            value: null,
+                                          ),
+                                        ),
+                                  trailing: Icon(
+                                    Icons.keyboard_arrow_right,
+                                    color: Colors.white,
+                                  ),
+                                  title: Text(
+                                    (current_location == null)
+                                        ? 'Your current location'
+                                        : current_location.loc_name,
+                                    style: TextStyle(
+                                        color: Colors.white, fontSize: 16.0),
+                                  ),
+                                  onTap: (currentTrip == null)
+                                      ? () {
+                                          setState(() {
+                                            address_type = 'current';
+                                          });
+                                          _buttonTapped();
+                                        }
+                                      : null,
+                                )),
+                            new Container(
+                              height: 2.0,
+                            ),
+                            new Container(
+                                color: Color(MyColors().primary_color),
+                                child: new ListTile(
+                                  leading: Icon(
+                                    Icons.directions,
+                                    color: Colors.red,
+                                  ),
+                                  trailing: Icon(
+                                    Icons.keyboard_arrow_right,
+                                    color: Colors.white,
+                                  ),
+                                  title: Text(
+                                    (destination_location == null)
+                                        ? 'Enter Destination'
+                                        : destination_location.loc_name,
+                                    style: TextStyle(
+                                        color: Colors.white, fontSize: 16.0),
+                                  ),
+                                  onTap: (currentTrip == null)
+                                      ? () {
+                                          setState(() {
+                                            address_type = 'destination';
+                                          });
+                                          _buttonTapped();
+                                        }
+                                      : null,
+                                )),
+                          ],
+                        )),
                 (isBottomSheet)
                     ? new Container(
                         margin: EdgeInsets.only(
@@ -803,7 +807,9 @@ class _MapFragment extends State<MapFragment> {
                 mainAxisSize: MainAxisSize.max,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  Container(height: 5.0,),
+                  Container(
+                    height: 5.0,
+                  ),
                   new Text(driverDetails.vehicle_model,
                       style: TextStyle(
                         fontSize: 16.0,
@@ -886,6 +892,15 @@ class _MapFragment extends State<MapFragment> {
                           ),
                         )
                       : new Text(''),
+                  new FlatButton(
+                    onPressed: () {
+                      _confirmCancelTrip();
+                    },
+                    child: new Text('Cancel',
+                        style: new TextStyle(
+                            fontSize: 14.0,
+                            color: Color(MyColors().button_text_color))),
+                  )
                 ],
               ),
             )
@@ -894,6 +909,110 @@ class _MapFragment extends State<MapFragment> {
       );
     } else {
       return new Text('');
+    }
+  }
+
+  void _confirmCancelTrip() {
+    showDialog<Null>(
+      context: context,
+      barrierDismissible: true, // user must tap button!
+      builder: (BuildContext context) {
+        return new AlertDialog(
+          title: new Text('Confirmation'),
+          content: new SingleChildScrollView(
+            child: new ListBody(
+              children: <Widget>[
+                new Text('Are you sure you want to cancel this ride?'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            new FlatButton(
+              child: new Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            new FlatButton(
+              child: new Text(
+                'Continue',
+                style: TextStyle(color: Color(MyColors().button_text_color)),
+              ),
+              onPressed: () {
+                setState(() {
+                  _inAsyncCall = true;
+                  isBottomSheet = false;
+                  destination_location = null;
+                  dialogType = DialogType.request;
+                  trip_distance = '0 km';
+                  trip_duration = '0 min';
+                });
+                setModeForDestination('none');
+                deleteTripStatusForUser();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> deleteTripStatusForUser() async {
+    try {
+      DatabaseReference ref = FirebaseDatabase.instance
+          .reference()
+          .child('users')
+          .child(_email.replaceAll('.', ','))
+          .child('trips');
+      await ref.child('past/${currentTrip.id}').set({
+        'id': currentTrip.id,
+        'current_location': current_location.toJSON(),
+        'destination': destination_location.toJSON(),
+        'trip_distance': currentTrip.trip_distance,
+        'trip_duration': currentTrip.trip_duration,
+        'payment_method': (currentTrip.card_trip)
+            ? currentTrip.payment_method.toJSON()
+            : 'cash',
+        'vehicle_type': currentTrip.vehicle_type,
+        'promotion': (currentTrip.promo_used)
+            ? currentTrip.promotion.toJSON()
+            : 'no_promo',
+        'card_trip': currentTrip.card_trip ? true : false,
+        'promo_used': currentTrip.promo_used ? true : false,
+        'scheduled_date': currentTrip.scheduled_date,
+        'status': '0',
+        'created_date': currentTrip.created_date,
+        'price_range': currentTrip.price_range,
+        'trip_total_price': '₦0.00',
+        'fare': currentTrip.fare.toJSON(),
+        'assigned_driver': currentTrip.assigned_driver
+      }).whenComplete(() {
+        ref.child('status').remove().then((complete) {
+          ref.child('incoming/${currentTrip.id}').remove().then((complete) {
+            DatabaseReference genRef = FirebaseDatabase.instance
+                .reference()
+                .child('general_trips/${currentTrip.id}');
+            genRef.remove().then((complete) {
+              if (driverDetails != null) {
+                new Utils().sendNotification(
+                    "The rider has canceled this trip. Please check the app and accept another request.",
+                    driverDetails.number);
+              }
+              setState(() {
+                _inAsyncCall = false;
+              });
+              new Utils().showToast(
+                  'Ride successfully deleted. Thank you for choosing GidiRide',
+                  false);
+            });
+          });
+        });
+      });
+    } catch (e) {
+      setState(() {
+        _inAsyncCall = false;
+      });
+      new Utils().neverSatisfied(context, 'Error', e.toString());
     }
   }
 
@@ -1021,7 +1140,7 @@ class _MapFragment extends State<MapFragment> {
       String message =
           "Below are details of the ride booked.\n\nRide ID: $id\nUser Fullname: $_name\nUser Email Address: $_email\nUser Mobile Number: $_number\nScheduled At: $_date_scheduled\nPickup Address: ${current_location.loc_address}\nDrop off Address: ${destination_location.loc_address}\n\nGidiRide Team";
       var url =
-          "http://gidiride.ng/emailsending/sendbooking.php.php?subject=$subj&body=$message";
+          "http://gidiride.ng/emailsending/sendbooking.php?subject=$subj&body=$message";
       http.get(url).then((response) {
         setState(() {
           _inAsyncCall = false;

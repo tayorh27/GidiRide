@@ -119,10 +119,11 @@ class _MyTrips extends State<MyTrips> {
               .child('users/${_email.replaceAll('.', ',')}/trips/past'),
           scrollDirection: Axis.vertical,
           itemBuilder: (context, snapshot, animation, index) {
-            //String status = snapshot.value['status'].toString();
+            String status = snapshot.value['status'].toString();
             FavoritePlaces fp =
                 FavoritePlaces.fromJson(snapshot.value['current_location']);
-            DateTime dt = DateTime.parse(snapshot.value['scheduled_date'].toString());
+            DateTime dt =
+                DateTime.parse(snapshot.value['scheduled_date'].toString());
             String date_sch = '${months[(dt.month - 1)]} ${dt.day}, ${dt.year}';
             return new Padding(
                 padding: EdgeInsets.all(20.0),
@@ -134,26 +135,48 @@ class _MyTrips extends State<MyTrips> {
                         Container(
                             child: ListTile(
                           title: Text(fp.loc_name,
-                              style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16.0)),
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w500, fontSize: 16.0)),
                           subtitle: new Column(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             mainAxisSize: MainAxisSize.max,
                             children: <Widget>[
-                              Container(height: 5.0,),
-                              new Text(
-                                  date_sch,
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.w500, fontSize: 14.0)),
-                              Container(height: 5.0,),
-                              new Text(
-                                  snapshot.value['vehicle_type']
-                                      .toString()
-                                      .toUpperCase(),
+                              Container(
+                                height: 5.0,
+                              ),
+                              new Text(date_sch,
                                   style: TextStyle(
-                                      color:
-                                          Color(MyColors().secondary_color))),
-                              Container(height: 5.0,),
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 14.0)),
+                              Container(
+                                height: 5.0,
+                              ),
+                              new Row(
+                                mainAxisSize: MainAxisSize.max,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: <Widget>[
+                                  new Text(
+                                      snapshot.value['vehicle_type']
+                                          .toString()
+                                          .toUpperCase(),
+                                      style: TextStyle(
+                                          color: Color(
+                                              MyColors().secondary_color))),
+                                  new Text(
+                                      (status == '0')
+                                          ? 'RIDE CANCELED'
+                                          : 'RIDE FINISHED',
+                                      style: TextStyle(
+                                          color: (status == '0')
+                                              ? Colors.red
+                                              : Color(
+                                                  MyColors().secondary_color))),
+                                ],
+                              ),
+                              Container(
+                                height: 5.0,
+                              ),
                             ],
                           ),
                           trailing: Icon(

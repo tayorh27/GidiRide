@@ -15,7 +15,7 @@ class Settings extends StatefulWidget {
   State<StatefulWidget> createState() => _Settings();
 }
 
-const kGoogleApiKey = "AIzaSyB_2OfHqOnXS577kNUKckBB0yu49g8Rw40";//"AIzaSyDlMdDnOh3BQtZhF8gku4Xq1uFB-ZhLdig";
+const kGoogleApiKey = "AIzaSyCPSnicnVW3upwwp5Q_MgOkh7FhP3-ab1I";//"AIzaSyDlMdDnOh3BQtZhF8gku4Xq1uFB-ZhLdig";
 GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: kGoogleApiKey);
 final homeScaffoldKey = GlobalKey<ScaffoldState>();
 final searchScaffoldKey = GlobalKey<ScaffoldState>();
