@@ -446,6 +446,10 @@ class _UserLogin extends State<UserLogin> {
         if (_email == 'gisanrinadetayo@gmail.com' &&
             _password == 'tayus123' &&
             _code == '123456') {
+          utils.saveUserInfo(gUser);
+          if (isCheck) {
+            updateDeviceId();
+          }
           setState(() {
             _inAsyncCall = false;
           });
